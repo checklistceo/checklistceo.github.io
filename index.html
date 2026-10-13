@@ -596,7 +596,7 @@ function cadastro(){
     if (erro) return;
     const c = calcula();
     enviaLead({ nome, email, whats: tel, nota: c.total, area: c.pior ? c.pior.a : '',
-      respostas: respostas.join(''), origem: (new URLSearchParams(location.search).get('utm_source') || document.referrer || 'direto') });
+      respostas: respostas.join('-'), origem: (new URLSearchParams(location.search).get('utm_source') || document.referrer || 'direto') });
     track('raiox_lead');
     resultado(nome, c);
   };
