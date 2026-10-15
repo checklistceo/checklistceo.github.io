@@ -467,7 +467,20 @@ document.querySelectorAll('[data-checkout]').forEach(a => {
   a.addEventListener('click', () => track('checkout_clique'));
 });
 
-function track(ev){ try{ if (window.fbq) fbq('trackCustom', ev); }catch(e){} }
+// contador grátis: cada evento vira 1 linha na planilha "eventos site checklist ceo" (google forms, conta checklistceo)
+const EVENTOS = { url: 'https://docs.google.com/forms/d/e/1FAIpQLSdvXzmeAsS4kEwC703KTT_EHdJ_2qDuVylWwJJDO9U-ymiBwg/formResponse', evento: 'entry.791451562', origem: 'entry.603089180', detalhe: 'entry.1980610643' };
+function origemVisita(){ return new URLSearchParams(location.search).get('utm_source') || (document.referrer ? new URL(document.referrer).hostname : 'direto'); }
+function track(ev, det){
+  try{ if (window.fbq) fbq('trackCustom', ev); }catch(e){}
+  try{
+    const f = new FormData();
+    f.append(EVENTOS.evento, ev);
+    f.append(EVENTOS.origem, origemVisita());
+    f.append(EVENTOS.detalhe, det || (location.hash || '') + (innerWidth < 700 ? ' cel' : ' pc'));
+    fetch(EVENTOS.url, {method:'POST', mode:'no-cors', body:f});
+  }catch(e){}
+}
+(function(){ let nova = true; try{ nova = !sessionStorage.getItem('ccv'); sessionStorage.setItem('ccv','1'); }catch(e){} if (nova) track('visita'); })();
 function esc(t){ const d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
 
 // ===== teste raio-x (mesmas 10 perguntas do raio-x.html) =====
@@ -605,7 +618,7 @@ function cadastro(){
 }
 
 function resultado(nome, c){
-  track('raiox_fim');
+  track('raiox_fim', String(c.total) + ' · ' + (c.pior ? c.pior.a : ''));
   estado = 'resultado';
   const {total, pior, furos} = c;
   let faixa, sem, titulo, texto;
